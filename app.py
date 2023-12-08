@@ -1,19 +1,23 @@
-from requests_html import HTMLSession
-from termcolor import cprint
-from random import choice
+import inquirer
+import os
 from utils import get_links
-import re
+from requests_html import HTMLSession
+from parse_connections import create_connections
 
-session = HTMLSession()
+command_question = [
+    inquirer.List('action',
+        message="Actions:",
+        choices=['Get Page Links', 'Send Discord Message'],
+    ),
+]
 
-starting_name = '/wiki/' + input("Name of starting article:")
-cur_loc = starting_name
-crawl_length = int(input("Number of movements: "))
+command = inquirer.prompt(command_question)
 
-for i in range(crawl_length):
-    links = get_links(cur_loc, session)
-    new_loc = choice(links)
-    cprint(cur_loc + ' -> ' + new_loc, "light_green")
-    cur_loc = new_loc
-
-print("final article: " + cur_loc)
+com = command['action']
+if com == 'Get Page Links':
+    search_page = input('source page: ')
+    session = HTMLSession().get(f'https://coppermind.net/wiki/{search_page}')
+    links = get_links(search_page, session)
+    print(links)
+elif com == 'Send Discord Message':
+    print('Unimplimented action')

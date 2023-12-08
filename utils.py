@@ -1,23 +1,18 @@
 from requests_html import HTMLSession
+import requests_html as rh
 import re
 
-def get_links(name, session):
-    rl = []
-    r = session.get('https://coppermind.net/wiki/' + name)
-    ls = r.html.links
-    for l in ls:
-        if not re.match("/wiki/", l):
-            continue
-        if re.match("/wiki/.*[:/%?].*", l):
-            continue
-        rl.append(l[6:])
-    return rl
+def get_links(name, page):
+    rs = set()
+    paragraphs = page.html.find('p')
 
-class Connection: 
-    def __init__(self, from_page, to_page) -> None:
-        self.from_page = from_page
-        self.to_page = to_page
-
-class Chain:
-    def __init__(self) -> None:
-        self.start = None
+    for p in paragraphs:
+        for l in p.links:
+            if not re.match("/wiki/", l) or re.match("/wiki/.*[/?].*", l) or re.match("/wiki/[(Help)(Catagory)(Template)].*", l):
+                continue
+            hash_loc = l.find('#')
+            if hash_loc > -1:
+                rs.add(l[6:hash_loc])
+            else:
+                rs.add(l[6:])
+    return rs
